@@ -1,12 +1,7 @@
 import React from 'react'
+import Axios from 'axios'
 import './SearchBar.css'
-import Autosuggest from 'react-autosuggest';
-
-const TEST_DATA = [
-    { name: 'Word1' },
-    { name: 'Word2' },
-    { name: 'Word3' },
-]
+import Autosuggest from 'react-autosuggest'
 
 class SearchBar extends React.Component {
 
@@ -23,8 +18,9 @@ class SearchBar extends React.Component {
         const inputProps = {
             placeholder: "Search",
             value,
-            onChange: this.onChange
-        };
+            onChange: this.onChange,
+            onKeyUp: this.onKeyUp
+        }
         return (
             <div className='search-bar-root'>
                 <Autosuggest
@@ -41,30 +37,45 @@ class SearchBar extends React.Component {
     }
 
     onChange = (event, { newValue, method }) => {
+        console.log('onChanged: ' + newValue)
         this.setState({
             value: newValue
-        });
-    };
+        })
+    }
 
     onSuggestionsFetchRequested = ({ value }) => {
-        this.setState({
-            suggestions: TEST_DATA
-        });
-    };
+        if (value.endsWith(' ')) {
+            Axios.get(`http://localhost:8080/api/query?word=${value}`)
+                .then(res => {
+                    if (res.data && res.data.length > 0) {
+                        this.setState({
+                            suggestions: res.data.map(data => data.following_word)
+                        })
+                    } else {
+                        this.setState({
+                            suggestions: []
+                        })
+                    }
+                })
+                .catch(err => {
+                    console.log('Request err: ' + err)
+                })
+        }
+    }
 
     onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: []
-        });
-    };
+        })
+    }
 
     getSuggestionValue(suggestion) {
-        return suggestion.name;
+        return suggestion
     }
 
     renderSuggestion(suggestion) {
         return (
-            <p className='search-bar-suggestion-container'>{suggestion.name}</p>
+            <p className='search-bar-suggestion-container'>{suggestion}</p>
         )
     }
 }
