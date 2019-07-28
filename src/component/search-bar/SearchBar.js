@@ -1,7 +1,12 @@
 import React from 'react'
-import Axios from 'axios'
 import './SearchBar.css'
-import Autosuggest from 'react-autosuggest'
+import { connect } from 'react-redux'
+import { Card, Input, MenuItem, ClickAwayListener } from '@material-ui/core'
+import { debounce } from "debounce"
+import { loadSuggestions } from './SearchBarAction'
+
+const DEFAULT_ELEVATION = 2
+const INCREASED_ELEVATION = 10
 
 class SearchBar extends React.Component {
 
@@ -9,75 +14,100 @@ class SearchBar extends React.Component {
         super(props)
         this.state = {
             value: '',
-            suggestions: []
+            shouldShowSuggestion: false,
+            elevation: DEFAULT_ELEVATION
         }
     }
 
     render() {
-        const { value, suggestions } = this.state
-        const inputProps = {
-            placeholder: "Search",
-            value,
-            onChange: this.onChange,
-            onKeyUp: this.onKeyUp
-        }
         return (
-            <div className='search-bar-root'>
-                <Autosuggest
-                    suggestions={suggestions}
-                    onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-                    onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                    getSuggestionValue={this.getSuggestionValue}
-                    renderSuggestion={this.renderSuggestion}
-                    inputProps={inputProps}>
-                    <div className='search-bar-foot'></div>
-                </Autosuggest>
-            </div>
+            <ClickAwayListener onClickAway={() => this.onClickAway()}>
+                <Card
+                    className='search-bar-root'
+                    elevation={this.state.elevation}>
+                    <div className='search-bar-card'>
+                        <Input
+                            inputRef={element => this.inputElement = element}
+                            className='search-bar-input'
+                            value={this.state.value}
+                            onFocus={() => this.onFocus()}
+                            onClick={() => this.onFocus()}
+                            onChange={e => this.onChange(e)}
+                            placeholder='Search'
+                            disableUnderline={true}
+                            fullWidth={true} />
+                    </div>
+                    <div hidden={!(this.state.shouldShowSuggestion && this.props.hasSuggestions)} className='search-bar-suggestion-container'>
+                        {this.renderMenuItems()}
+                    </div>
+                </Card>
+            </ClickAwayListener>
         )
     }
 
-    onChange = (event, { newValue, method }) => {
-        console.log('onChanged: ' + newValue)
+    onFocus() {
+        this.setState({
+            elevation: INCREASED_ELEVATION,
+            shouldShowSuggestion: true
+        })
+    }
+
+    onClickAway() {
+        this.setState({
+            elevation: DEFAULT_ELEVATION,
+            shouldShowSuggestion: false
+        })
+    }
+
+    renderMenuItems() {
+        return this.props.suggestions.map((suggestion, index) => {
+            return (
+                <MenuItem className='search-bar-suggestion' key={index} onClick={(e) => this.onMenuItemClick(e, suggestion)}>{suggestion}</MenuItem>
+            )
+        })
+    }
+
+    onChange(e) {
+        let newValue = e.target.value
         this.setState({
             value: newValue
         })
+        this.fetchSuggestionsDebounced(this.getLastWord(newValue))
     }
 
-    onSuggestionsFetchRequested = ({ value }) => {
-        if (value.endsWith(' ')) {
-            Axios.get(`http://localhost:8080/api/query?word=${value}`)
-                .then(res => {
-                    if (res.data && res.data.length > 0) {
-                        this.setState({
-                            suggestions: res.data.map(data => data.following_word)
-                        })
-                    } else {
-                        this.setState({
-                            suggestions: []
-                        })
-                    }
-                })
-                .catch(err => {
-                    console.log('Request err: ' + err)
-                })
+    onMenuItemClick(e, suggestion) {
+        this.inputElement.focus()
+        let currentValue = this.state.value.trimRight()
+        let newValue = `${currentValue} ${suggestion}`
+        this.setState({
+            value: `${newValue}`
+        })
+        this.fetchSuggestions(this.getLastWord(newValue))
+    }
+
+    getLastWord(value) {
+        let valueWithNoTrailingSpace = value.trimRight()
+        let word = valueWithNoTrailingSpace.substr(valueWithNoTrailingSpace.lastIndexOf(' ') + 1)
+        return word.replace(/\\+/, '')
+    }
+
+    fetchSuggestions = word => {
+        if (word.length > 0) {
+            this.props.loadSuggestions(word)
         }
     }
 
-    onSuggestionsClearRequested = () => {
-        this.setState({
-            suggestions: []
-        })
-    }
+    fetchSuggestionsDebounced = debounce(this.fetchSuggestions, 300)
+}
 
-    getSuggestionValue(suggestion) {
-        return suggestion
-    }
-
-    renderSuggestion(suggestion) {
-        return (
-            <p className='search-bar-suggestion-container'>{suggestion}</p>
-        )
+const mapStateToProps = state => {
+    return {
+        suggestions: state.suggestionReducer.suggestions,
+        hasSuggestions: state.suggestionReducer.hasSuggestions
     }
 }
 
-export default SearchBar
+export default connect(
+    mapStateToProps,
+    { loadSuggestions }
+)(SearchBar)

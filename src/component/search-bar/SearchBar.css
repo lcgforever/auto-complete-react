@@ -1,85 +1,34 @@
 .search-bar-root {
     display: flex;
     flex-direction: column;
-    margin-top: 2%;
+    justify-content: center;
+    margin-top: 2.5%;
     width: 50%;
+    border-radius: 4vh !important;
+}
+
+.search-bar-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 8vh;
+}
+
+.search-bar-input {
+    padding: 0 4%;
+    border: 0;
 }
 
 .search-bar-suggestion-container {
-    margin-block-start: 5px;
-    margin-block-end: 5px;
-    padding-block-start: 1em;
-    padding-block-end: 1em;
-    background-color: transparent;
-}
-
-.search-bar-foot {
-    width: 100%;
-    height: 30px;
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
-}
-
-.react-autosuggest__container {
-    position: relative;
-    width: 100%;
-}
-  
-.react-autosuggest__input {
-    width: 100%;
-    height: 40px;
-    padding: 10px 5%;
-    font-family: Helvetica, sans-serif;
-    font-weight: 300;
-    font-size: 16px;
-    border: 0;
-    border-radius: 30px;
-    box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 3px 1px -2px rgba(0,0,0,0.12);
-}
-
-.react-autosuggest__input:focus {
-    outline: none;
-    box-shadow: 0px 6px 6px -3px rgba(0,0,0,0.2), 0px 10px 14px 1px rgba(0,0,0,0.14), 0px 4px 18px 3px rgba(0,0,0,0.12);
-}
-
-.react-autosuggest__container--open .react-autosuggest__input {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.react-autosuggest__suggestions-container {
-    display: none;
-}
-
-.react-autosuggest__container--open .react-autosuggest__suggestions-container {
-    display: block;
-    position: absolute;
-    top: 100%;
-    width: 110%;
-    border: 0;
     background-color: white;
-    font-family: Helvetica, sans-serif;
-    font-weight: 300;
-    font-size: 16px;
+}
+
+.search-bar-suggestion {
+    height: 8vh;
+    display: flex;
+    align-items: center;
     text-align: left;
-    padding: 0 0;
-    padding-block-end: 20px;
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
-    box-shadow: 0px 6px 6px -3px rgba(0,0,0,0.2), 0px 10px 14px 1px rgba(0,0,0,0.14), 0px 4px 18px 3px rgba(0,0,0,0.12);
-}
-
-.react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0 0;
-    list-style-type: none;
-}
-
-.react-autosuggest__suggestion {
-    cursor: pointer;
-    padding: 0 4.5%;
-}
-
-.react-autosuggest__suggestion--highlighted {
-    background-color: lightgray;
+    padding-left: 4% !important;
+    padding-right: 4% !important;
 }
